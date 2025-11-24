@@ -1,0 +1,22 @@
+# --- IMPLEMENTATION ---
+# 1. The client knows the Permanent Public Key (from the .onion address) 
+#    and the current date.
+CLIENT_PERMANENT_PUBLIC_KEY = hashlib.sha256(PERMANENT_PRIVATE_KEY_BYTES).digest() 
+CLIENT_CURRENT_SEED = get_daily_seed()
+
+# 2. The client calculates the Blinded Public Key using the same KDF logic.
+# (Note: In reality, the client uses the Permanent Public Key, not the Private Key, 
+# but the concept of deriving the same Blinded Public Key holds true.)
+CLIENT_BLINDED_PUBLIC_KEY = hashlib.sha256(
+    derive_blinded_private_key(PERMANENT_PRIVATE_KEY_BYTES, CLIENT_CURRENT_SEED)
+).digest()
+
+# 3. The client queries the HSDir using the calculated blinded key.
+print(f"Client calculating index: {CLIENT_BLINDED_PUBLIC_KEY.hex()[:16]}...")
+
+# This would trigger a network lookup to the HSDir relays.
+# We simulate success by checking if the calculated key matches the published key.
+if CLIENT_BLINDED_PUBLIC_KEY == BLINDED_PUBLIC_KEY:
+    print("Step 3: Client Successfully Calculated Lookup Key (Blinded Public Key)")
+else:
+    print("Step 3: Error in key calculation. Lookup failed.")
