@@ -1,0 +1,35 @@
+// L5/Application Layer Code (The user process)
+
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+void client_connect() {
+    int sockfd;
+    struct sockaddr_in serv_addr;
+    
+    // 1. CREATE.request (Establish socket for L4 service)
+    sockfd = socket(AF_INET, SOCK_STREAM, 0); // SOCK_STREAM implies TCP (Connection-Oriented Service)
+
+    // Set server address details...
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(8080);
+    inet_pton(AF_INET, "192.0.2.1", &serv_addr.sin_addr);
+
+    // 2. CONNECT.request (The core primitive call)
+    // The Application Layer (client) requests the Transport Layer (TCP) to establish a connection.
+    if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+        // If the call returns an error, the connection failed.
+        printf("CONNECT.confirm FAILED\n");
+    } else {
+        // If the call succeeds, the Transport Layer confirmed success.
+        printf("CONNECT.confirm SUCCESS: Connection Established.\n");
+        
+        // 3. DATA.request (The application is now ready to send data)
+        // This is followed by a SEND or WRITE call.
+        send(sockfd, "Hello", 5, 0); 
+    }
+    
+    // 4. DISCONNECT.request
+    close(sockfd);
+}
